@@ -1,0 +1,15 @@
+{
+  "name": "hypixel-status-webhook",
+  "version": "1.0.0",
+  "description": "A bot that updates when hypixel is having issues",
+  "main": "index.js",
+  "author": "https://github.com/Cryptizism",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "axios": "^0.27.2"
+  }
+}

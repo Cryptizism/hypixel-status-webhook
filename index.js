@@ -4,7 +4,7 @@ const webhooks = require('./webhooks.json');
 async function startLoop(){
     var status = await callStatusApi();
     var responseTime = await callResponseTimeApi();
-    if(status.issue || responseTime >= 100){
+    if(status.issue || responseTime >= 1000){
         sendWebhooks(responseTime, status.description);
     }
     setTimeout(startLoop, 300000);
@@ -54,7 +54,7 @@ async function callResponseTimeApi(){
 }
 
 function sendWebhooks(responseTime, description){
-    if (responseTime >= 100){
+    if (responseTime >= 1000){
         var embedDescription = "The Hypixel API is currently experiencing a high response time.";
     } else {
         var embedDescription = description;

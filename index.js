@@ -59,7 +59,7 @@ function sendWebhooks(responseTime, description){
     } else {
         var embedDescription = description;
     }
-    embedDescription = embedDescription + "\n Check out the [status page](https://status.hypixel.net/) for more information and updates.";
+    embedDescription = embedDescription + "\nCheck out the [status page](https://status.hypixel.net/) for more information and updates.";
     var embed = [{
         title: "⚠ Hypixel Status",
         description: embedDescription,

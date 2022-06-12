@@ -4,8 +4,12 @@ const webhooks = require('./webhooks.json');
 async function startLoop(){
     var status = await callStatusApi();
     var responseTime = await callResponseTimeApi();
-    if(status.issue || responseTime >= 1000){
-        sendWebhooks(responseTime, status.description);
+    if(!status || !responseTime){
+        console.log("Error calling APIs");
+    } else {
+        if(status.issue || responseTime >= 1000){
+            sendWebhooks(responseTime, status.description);
+        }
     }
     setTimeout(startLoop, 300000);
 }
@@ -15,18 +19,15 @@ function callStatusApi(){
         axios.get('https://status.hypixel.net/api/v2/status.json')
         .then(function (response) {
             var data = response.data;
-            var id = data.page.id;
             var indicator = data.status.indicator;
             var message = data.status.description;
-            if(indicator != "none"){
-                issue = true;
-            }
-            else{
+            if(indicator == "none"){
                 issue = false;
+            } else {
+                issue = true;
             }
             var response = {
                 issue: issue,
-                id: id,
                 description: message
             }
             resolve(response);
@@ -80,7 +81,6 @@ function sendWebhooks(responseTime, description){
         },
     }]
     for(var i = 0; i < webhooks.length; i++){
-        console.log(`Sending webhook to ${webhooks[i]}`);
         var webhook = webhooks[i];
         axios.post(webhook, {
             embeds: embed

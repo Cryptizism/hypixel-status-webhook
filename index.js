@@ -1,17 +1,33 @@
 const axios = require('axios');
 const webhooks = require('./webhooks.json');
 
+var previousStatus = {};
+
+//configure to ur liking
+var loopPeriod = 300000;
+var highResponseTime = 500;
+
 async function startLoop(){
     var status = await callStatusApi();
     var responseTime = await callResponseTimeApi();
     if(!status || !responseTime){
         console.log("Error calling APIs");
     } else {
-        if(status.issue || responseTime >= 1000){
-            sendWebhooks(responseTime, status.description);
+        if(responseTime >= highResponseTime){
+            status["issue"] = true;
         }
+        if((status.issue) && (!previousStatus.issue)){
+            sendWebhooks(responseTime, status.description, false);
+            console.log("Sent webhooks", responseTime, status, previousStatus);
+        } else if((!status.issue) && (previousStatus.issue)){
+            sendWebhooks(responseTime, status.description, true);
+            console.log("Resolved");
+        }
+        console.log("nothing");
+        previousStatus = status;
+        previousStatus["responseTime"] = responseTime;
     }
-    setTimeout(startLoop, 300000);
+    setTimeout(startLoop, loopPeriod);
 }
 
 function callStatusApi(){
@@ -54,32 +70,55 @@ async function callResponseTimeApi(){
     });
 }
 
-function sendWebhooks(responseTime, description){
-    if (responseTime >= 1000){
-        var embedDescription = "The Hypixel API is currently experiencing a high response time.";
-    } else {
-        var embedDescription = description;
+function sendWebhooks(responseTime, description, resolved){
+    var embedDescription;
+    if (responseTime >= highResponseTime || previousStatus.responseTime >= highResponseTime){
+        embedDescription = "The Hypixel API is currently experiencing a high response time.";
     }
-    embedDescription = embedDescription + "\nCheck out the [status page](https://status.hypixel.net/) for more information and updates.";
-    var embed = [{
-        title: "⚠ Hypixel Status",
-        description: embedDescription,
-        color: 16711680,
-        timestamp: new Date(),
-        fields: [{
-            name: "Status",
-            value: description,
-            inline: true
-        },
-        {
-            name: "API Response Time",
-            value: `${responseTime}ms`,
-            inline: true
-        }],
-        footer: {
-            text: "https://status.hypixel.net/"
-        },
-    }]
+    embedDescription += description.length > 0 ? `\n${description}` : "";
+    if(resolved){
+        embedDescription = embedDescription + "\nThis issue has been resolved.";
+        var embed = [{
+            title: "✅ Hypixel Status",
+            description: embedDescription,
+            color: 3066993,
+            timestamp: new Date(),
+            fields: [{
+                name: "Status",
+                value: description,
+                inline: true
+            },
+            {
+                name: "API Response Time",
+                value: `${responseTime}ms`,
+                inline: true
+            }],
+            footer: {
+                text: "https://status.hypixel.net/"
+            },
+        }] 
+    } else {
+        embedDescription = embedDescription + "\nCheck out the [status page](https://status.hypixel.net/) for more information and updates.";
+        var embed = [{
+            title: "⚠ Hypixel Status",
+            description: embedDescription,
+            color: 16711680,
+            timestamp: new Date(),
+            fields: [{
+                name: "Status",
+                value: description,
+                inline: true
+            },
+            {
+                name: "API Response Time",
+                value: `${responseTime}ms`,
+                inline: true
+            }],
+            footer: {
+                text: "https://status.hypixel.net/"
+            },
+        }] 
+    }
     for(var i = 0; i < webhooks.length; i++){
         var webhook = webhooks[i];
         axios.post(webhook, {

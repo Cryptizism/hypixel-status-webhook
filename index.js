@@ -18,12 +18,9 @@ async function startLoop(){
         }
         if((status.issue) && (!previousStatus.issue)){
             sendWebhooks(responseTime, status.description, false);
-            console.log("Sent webhooks", responseTime, status, previousStatus);
         } else if((!status.issue) && (previousStatus.issue)){
             sendWebhooks(responseTime, status.description, true);
-            console.log("Resolved");
         }
-        console.log("nothing");
         previousStatus = status;
         previousStatus["responseTime"] = responseTime;
     }

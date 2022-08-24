@@ -72,7 +72,7 @@ function sendWebhooks(responseTime, description, resolved){
     if (responseTime >= highResponseTime || previousStatus.responseTime >= highResponseTime){
         embedDescription = "The Hypixel API is currently experiencing a high response time.";
     }
-    embedDescription += description.length > 0 ? `\n${description}` : "";
+    embedDescription += description.length > 0 && description != "All Systems Operational" ? `\n${description}` : "";
     if(resolved){
         embedDescription = embedDescription + "\nThis issue has been resolved.";
         var embed = [{
